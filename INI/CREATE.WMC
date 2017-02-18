@@ -1,0 +1,109 @@
+
+
+/*--[распределить окно, сформировать его параметры]--*/
+int  wm_Create(int x1,int y1,int x2,int y2,
+		int xx,int yy,int Control,char *title,wm_metod Metod)
+{
+ wm_windP w;
+ int val;
+
+ if(x1<0||y1<0||x2>wm_xSCR||y2>wm_ySCR) return(wm_BADpos);
+ w=wm_allocmem(1,sizeof(wm_windT));
+ if(w==NULL) return(wm_BADmem);
+ w->Memory=wm_uSTRUCT;
+ w->X1=x1;
+ w->Y1=y1;
+ w->X2=x2;
+ w->Y2=y2;
+ w->Control=Control|HIDDEN;
+
+ if(Control&BORDER)
+ {
+  w->X1++;w->X2--;
+  w->Y1++;w->Y2--;
+ }
+
+ if(w->X1>w->X2||w->Y1>w->Y2) return(wm_BADpos);
+
+ w->XX = max(xx,w->X2-w->X1+1);
+ w->YY = max(yy,w->Y2-w->Y1+1);
+
+
+ w->setup=wm_default;
+ w->Metod=Metod;
+
+ val=wm_create(w);
+ if(val==wm_BADmem) wm_freemem(w);
+ else
+   {
+   w->Memory|=wm_uTITLE;
+   if(title==NULL) w->title[wm_tTOP2]=title;
+   else wm_title(w,title,wm_tTOP2,w->setup.attr_title,0);
+   w->Control=Control;
+   w->Metod(w,wm_OPEN);
+   }
+ return(val);
+}
+
+
+/*--[распределить содержимое окна и бордюр]--*/
+int wm_create(wm_windP w)
+{
+ if(w->data==NULL)
+ {
+  w->data=wm_allocmem(2,w->XX*w->YY);
+  w->Memory|=wm_uDATA;
+ }
+ if(w->border==NULL)
+ {
+  w->border=wm_allocmem(4,w->XX+w->YY+4);
+  w->Memory|=wm_uBORDER;
+ }
+ if(!w->data || !w->border)
+  {
+   wm_freemem(w->data);
+   wm_freemem(w->border);
+   return(wm_BADmem);
+  }
+  wm_xcls(w);
+  return(wm__create(w));
+}
+
+
+int wm__create(wm_windP w)
+{
+ int i;
+ wm_windP w1;
+
+ w->Handle=1;
+ if(wmx_TOP==NULL) wmx_TOP=w;
+ else
+ {
+  do{
+   w1=wmx_TOP;
+   w->Handle++;
+   i=0;
+   while(w1->next!=NULL)
+    {
+     if(w1->next->Handle==w->Handle) i=1;
+     w1=w1->next;
+    }
+  }while(i);
+  w1->next=w;
+ }
+ w->next=NULL;
+
+
+ if(w->Control&BORDER)
+ {
+  wmx_border(w);
+  wm_xtitle(w);
+ }
+ if(w->Metod==NULL) w->Metod=wm_xONOFF;
+ if(!(w->Control&HIDDEN))  w->Metod(w,wm_OPEN);
+ wm_active(w,0);
+
+ return(wm_OK);
+}
+
+

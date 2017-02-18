@@ -1,0 +1,10 @@
+
+int wm_Deinit()
+{
+ int i;
+ for(i=128;i>=0;i--) wm_Delete(i);
+ wm_freemem(wmx_WINDOWS);
+ wm_freemem(wmx_MAP);
+ wmx_deinit();
+ return(wm_OK);
+}

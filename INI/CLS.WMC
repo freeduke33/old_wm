@@ -1,0 +1,19 @@
+
+
+int  wm_cls(wm_windP w)
+{
+ if(w==NULL) return(wm_BADhandle);
+ wm__scroll(w,w->YY,' ');
+ return(wm_OK);
+}
+
+
+int wm_xcls(wm_windP w)
+{
+ int c;
+ c=w->Control;
+ w->Control|=HIDDEN;
+ wm__scroll(w,w->YY,' ');
+ w->Control=c;
+ return(wm_OK);
+}

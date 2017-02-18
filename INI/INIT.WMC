@@ -1,0 +1,69 @@
+
+wm_windT ___wm_screen=
+{CURSOR+SCROLL,0,0,0,0,24,79,80,25,0,0,0,0,NULL,
+ {"┌─┐││└─┘",0x37,'░',0x13,0x36,0x070,0x37,0x71},
+ {NULL,NULL},NULL,NULL,NULL};
+
+
+/*---[Label 1/инициализация пакета]---*/
+int  wm_Init()
+{
+ wm_bldT ini;
+ int i;
+
+ for(i=0;i<sizeof(wm_bldT);i++) ((char *)&ini)[i]=0;
+ return(wm_init(&ini));
+}
+
+/*---[Label 2/инициализация пакета]---*/
+int wm_init(wm_bldP ini)
+{
+ int ret;
+ if((ret=wmx_init())!=wm_OK) return(ret);
+
+
+ if(ini->Map==NULL)
+ {
+  ini->Map=wm_allocmem(wm_ySCR,wm_xSCR);
+  if(ini->Map==NULL) return(wm_BADmem);
+ }
+ if(ini->Windows==NULL)
+ {
+  ini->Windows=wm_allocmem(2,wm_ySCR*wm_xSCR);
+  if(ini->Windows==NULL)
+  {
+   wm_freemem(ini->Map);
+   return(wm_BADmem);
+  }
+ }
+ ini->SCREEN=&___wm_screen;
+ if(ini->SCREEN->data==NULL)
+ {
+  ini->SCREEN->data=wm_allocmem(2,wm_ySCR*wm_xSCR);
+  if(ini->SCREEN->data==NULL)
+  {
+   wm_freemem(ini->Map);
+   wm_freemem(ini->Windows);
+   return(wm_BADmem);
+  }
+ }
+ return(wm__init(ini));
+}
+
+/*---[Label 3/инициализация пакета]---*/
+int wm__init(wm_bldP ini)
+{
+ int ret;
+
+ if((ret=wmx_init())!=wm_OK) return(ret);
+
+  wmx_WINDOWS=ini->Windows;
+  wmx_MAP=ini->Map;
+  wmx_save(ini->SCREEN->data);
+  ini->SCREEN->Xpos=wm_cPos&0xff;
+  ini->SCREEN->Ypos=wm_cPos>>8;
+  wm__create(ini->SCREEN);
+  wm_actwin=ini->SCREEN;
+  return(wm_OK);
+}
+
